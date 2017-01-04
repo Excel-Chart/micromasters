@@ -7,9 +7,10 @@ from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.exceptions import ValidationError
+from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from courses.models import CourseRun
 from ecommerce.api import (
@@ -17,12 +18,16 @@ from ecommerce.api import (
     enroll_user_on_success,
     generate_cybersource_sa_payload,
     get_new_order_by_reference_number,
+    is_coupon_redeemable,
 )
 from ecommerce.models import (
+    Coupon,
     Order,
     Receipt,
+    UserCoupon,
 )
 from ecommerce.permissions import IsSignedByCyberSource
+from ecommerce.serializers import CouponSerializer
 from mail.api import MailgunClient
 
 log = logging.getLogger(__name__)
@@ -152,3 +157,26 @@ class OrderFulfillmentView(APIView):
                     )
         # The response does not matter to CyberSource
         return Response()
+
+
+class CouponsView(ReadOnlyModelViewSet):
+    """
+    View for coupons API. This is a read-only API showing the user
+    - what coupons they have available if those coupons would be automatically applied on checkout
+    - what coupons they have for a given coupon code, even if those coupons wouldn't be automatically applied
+    """
+    authentication_classes = (
+        SessionAuthentication,
+        TokenAuthentication,
+    )
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        return [
+            coupon for coupon in Coupon.objects.all()
+            if is_coupon_redeemable(coupon, self.request.user) and (
+                coupon.is_automatic or UserCoupon.objects.filter(user=self.request).exists()
+            )
+        ]
+
+    serializer_class = CouponSerializer
