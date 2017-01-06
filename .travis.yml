@@ -8,7 +8,7 @@ matrix:
       - env | grep CI >> .env
       - docker-compose -f travis-docker-compose.yml build
       - docker-compose -f travis-docker-compose.yml run celery echo
-      script: (docker-compose -f travis-docker-compose.yml up celery &); sleep 5; docker-compose -f travis-docker-compose.yml run web tox
+      script: (docker-compose -f travis-docker-compose.yml up celery &); sleep 5; docker-compose -f travis-docker-compose.yml run web tox ./ecommerce/api_test.py::CouponTests
       services:
         - docker
       env:
