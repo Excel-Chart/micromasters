@@ -538,64 +538,6 @@ class CouponTests(ESTestCase):
         for obj in [self.run1, self.run2, self.program, self.user]:
             obj.refresh_from_db()
 
-    def test_is_coupon_redeemable_for_run(self):
-        """Happy case for is_coupon_redeemable_for_run"""
-        coupon = CouponFactory.create(content_object=self.run1)
-        with patch('ecommerce.api.is_coupon_redeemable', autospec=True) as _is_coupon_redeemable:
-            _is_coupon_redeemable.return_value = True
-            assert is_coupon_redeemable_for_run(coupon, self.user, self.run1.edx_course_key) is True
-        assert _is_coupon_redeemable.call_count == 1
-        _is_coupon_redeemable.assert_called_with(coupon, self.user)
-
-    def test_is_not_redeemable(self):
-        """If is_coupon_redeemable returns False, is_coupon_redeemable_for_run should also return False"""
-        coupon = CouponFactory.create(content_object=self.run1)
-        with patch('ecommerce.api.is_coupon_redeemable', autospec=True) as _is_coupon_redeemable:
-            _is_coupon_redeemable.return_value = False
-            assert is_coupon_redeemable_for_run(coupon, self.user, self.run1.edx_course_key) is False
-        assert _is_coupon_redeemable.call_count == 1
-        _is_coupon_redeemable.assert_called_with(coupon, self.user)
-
-    def test_course_key_not_in_list(self):
-        """run is not in the course keys listed by Coupon"""
-        coupon = CouponFactory.create(content_object=self.program)
-        with patch('ecommerce.api.is_coupon_redeemable', autospec=True) as _is_coupon_redeemable, patch(
-            'ecommerce.api.Coupon.course_keys', new_callable=PropertyMock
-        ) as _course_keys:
-            _is_coupon_redeemable.return_value = True
-            _course_keys.return_value = ['missing']
-            assert is_coupon_redeemable_for_run(coupon, self.user, self.run1.edx_course_key) is False
-        assert _is_coupon_redeemable.call_count == 1
-        _is_coupon_redeemable.assert_called_with(coupon, self.user)
-        assert _course_keys.call_count == 1
-
-    def test_standard(self):
-        """
-        A standard coupon should be redeemable if various conditions are met
-        """
-        coupon = CouponFactory.create(content_object=self.program)
-        assert is_coupon_redeemable(coupon, self.user) is True
-
-    def test_user_not_enrolled_in_program(self):
-        """A coupon is not redeemable if the user is not enrolled in the same program as any coupon"""
-        coupon = CouponFactory.create(content_object=self.program)
-        user = UserFactory.create()
-        assert is_coupon_redeemable(coupon, user) is False
-
-    def test_user_not_enrolled_in_live_program(self):
-        """A coupon is not redeemable if the coupon's program is not live"""
-        coupon = CouponFactory.create(content_object=self.program)
-        self.program.live = False
-        self.program.save()
-        assert is_coupon_redeemable(coupon, self.user) is False
-
-    def test_is_not_valid(self):
-        """If a Coupon is not valid it should not be redeemable"""
-        coupon = CouponFactory.create(content_object=self.program)
-        with patch('ecommerce.api.Coupon.is_valid', new_callable=PropertyMock) as is_valid:
-            is_valid.return_value = False
-            assert is_coupon_redeemable(coupon, self.user) is False
-
     def test_no_more_coupons(self):
         """If user has no redemptions left the coupon should not be redeemable"""
         coupon = CouponFactory.create(content_object=self.program)
@@ -605,34 +547,3 @@ class CouponTests(ESTestCase):
         assert _user_has_redemptions.call_count == 1
         _user_has_redemptions.assert_called_with(self.user)
 
-    def test_prev_course(self):
-        """
-        A coupon for a previously purchased course should be redeemable if
-        it applies to the course which is being purchased
-        """
-        coupon = CouponFactory.create(
-            coupon_type=Coupon.DISCOUNTED_PREVIOUS_COURSE,
-            content_object=self.run1.course,
-        )
-        cert_json = {
-            "username": "staff",
-            "course_id": self.run1.edx_course_key,
-            "certificate_type": "verified",
-            "status": "downloadable",
-            "download_url": "http://www.example.com/demo.pdf",
-            "grade": "0.98"
-        }
-        CachedCertificate.objects.create(
-            user=self.user,
-            course_run=self.run1,
-            data=cert_json,
-        )
-        assert is_coupon_redeemable(coupon, self.user) is True
-
-    def test_prev_course_user_not_verified(self):
-        """If a user is not verified, they should not get a coupon for the course"""
-        coupon = CouponFactory.create(
-            coupon_type=Coupon.DISCOUNTED_PREVIOUS_COURSE,
-            content_object=self.run1.course,
-        )
-        assert is_coupon_redeemable(coupon, self.user) is False
