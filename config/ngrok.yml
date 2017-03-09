@@ -1,0 +1,14 @@
+console_ui: false
+tunnels:
+  web:
+    proto: http
+    bind_tls: false
+    addr: 8079
+  watch:
+    proto: http
+    bind_tls: false
+    addr: 8078
+  edx:
+    proto: http
+    bind_tls: false
+    addr: 8000

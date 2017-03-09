@@ -1,0 +1,9 @@
+tunnels:
+  web:
+    proto: http
+    bind_tls: false
+    addr: 192.168.99.100:8079
+  edx:
+    proto: http
+    bind_tls: false
+    addr: 192.168.99.100:8000
