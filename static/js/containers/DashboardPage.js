@@ -60,10 +60,6 @@ import FinalExamCard from '../components/dashboard/FinalExamCard';
 import ErrorMessage from '../components/ErrorMessage';
 import ProgressWidget from '../components/ProgressWidget';
 import {
-  clearCoupons,
-  fetchCoupons,
-} from '../actions/coupons';
-import {
   setDocumentSentDate,
   updateDocumentSentDate,
 } from '../actions/documents';
@@ -86,7 +82,6 @@ import type {
   AvailableProgram, AvailableProgramsState
 } from '../flow/enrollmentTypes';
 import type { FinancialAidState } from '../reducers/financial_aid';
-import type { CouponsState } from '../reducers/coupons';
 import type { ProfileGetResult } from '../flow/profileTypes';
 import type { Course, CourseRun, Program } from '../flow/programTypes';
 import type { Coupon } from '../flow/couponTypes';
@@ -105,6 +100,7 @@ import { generateSSOForm } from '../lib/pearson';
 import type { PearsonAPIState } from '../reducers/pearson';
 import { getOwnDashboard, getOwnCoursePrices } from '../reducers/util';
 import { actions } from '../lib/redux_rest';
+import type { RestState }  from '../flow/restTypes';
 
 const isProcessing = R.equals(FETCH_PROCESSING);
 const PEARSON_TOS_DIALOG = "pearsonTOSDialogVisible";
@@ -115,7 +111,7 @@ class DashboardPage extends React.Component {
   };
 
   props: {
-    coupons:                  CouponsState,
+    coupons:                  RestState,
     profile:                  ProfileGetResult,
     currentProgramEnrollment: AvailableProgram,
     programs:                 AvailableProgramsState,
