@@ -104,6 +104,7 @@ import {
 import { generateSSOForm } from '../lib/pearson';
 import type { PearsonAPIState } from '../reducers/pearson';
 import { getOwnDashboard, getOwnCoursePrices } from '../reducers/util';
+import { actions } from '../lib/redux_rest';
 
 const isProcessing = R.equals(FETCH_PROCESSING);
 const PEARSON_TOS_DIALOG = "pearsonTOSDialogVisible";
@@ -148,7 +149,7 @@ class DashboardPage extends React.Component {
     const { dispatch } = this.props;
     dispatch(clearDashboard(SETTINGS.user.username));
     dispatch(clearCoursePrices());
-    dispatch(clearCoupons());
+    dispatch(actions.coupons.clear());
   }
 
   submitPearsonSSO = () => {
@@ -276,8 +277,8 @@ class DashboardPage extends React.Component {
 
   fetchCoupons() {
     const { coupons, dispatch } = this.props;
-    if (coupons.fetchGetStatus === undefined) {
-      dispatch(fetchCoupons());
+    if (coupons.getStatus === undefined) {
+      dispatch(actions.coupons.get());
     }
   }
 
@@ -326,13 +327,13 @@ class DashboardPage extends React.Component {
       return;
     }
 
-    if (coupons.fetchPostStatus !== undefined) {
+    if (coupons.postStatus !== undefined) {
       // If we've already launched a POST request to attach this coupon
       // to this user, don't launch another one.
       return;
     }
 
-    if (coupons.fetchGetStatus === FETCH_PROCESSING || coupons.fetchGetStatus === undefined) {
+    if (coupons.getStatus === FETCH_PROCESSING || coupons.getStatus === undefined) {
       /*
       Abort to avoid the following race condition:
 
@@ -355,7 +356,7 @@ class DashboardPage extends React.Component {
       this.setCouponNotificationVisibility(true);
       this.context.router.push('/dashboard/');
       // update coupon state in Redux
-      dispatch(fetchCoupons());
+      dispatch(actions.coupons.get());
     }, () => {
       dispatch(setToastMessage({
         title: "Coupon failed",
@@ -477,7 +478,7 @@ class DashboardPage extends React.Component {
         coupon.program_id === program.id &&
         coupon.amount.eq(1)
       )),
-      R.pathOr([], ['coupons', 'coupons'])
+      R.pathOr([], ['coupons', 'data'])
     )(this.props);
   };
 
@@ -569,7 +570,7 @@ class DashboardPage extends React.Component {
       const calculatedPrices = calculatePrices(
         dashboard.programs,
         prices.coursePrices,
-        coupons.coupons
+        coupons.data
       );
       price = calculatedPrices.get(courseRun.id);
     }
@@ -658,10 +659,10 @@ class DashboardPage extends React.Component {
       />;
     }
 
-    const calculatedPrices = calculatePrices(dashboard.programs, prices.coursePrices, coupons.coupons);
+    const calculatedPrices = calculatePrices(dashboard.programs, prices.coursePrices, coupons.data);
 
     const courseListCardOptionalProps = {};
-    const coupon = coupons.coupons.find(coupon => coupon.program_id === program.id);
+    const coupon = coupons.data.find(coupon => coupon.program_id === program.id);
     if (coupon) {
       courseListCardOptionalProps.coupon = coupon;
     }

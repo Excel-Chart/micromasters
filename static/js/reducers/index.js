@@ -44,7 +44,6 @@ import { imageUpload } from './image_upload';
 import { financialAid } from './financial_aid';
 import { documents } from './documents';
 import { orderReceipt } from './order_receipt';
-import { coupons } from './coupons';
 import { pearson } from './pearson';
 import { dashboard } from './dashboard';
 import { prices } from './course_prices';
@@ -216,7 +215,6 @@ export default combineReducers({
   financialAid,
   documents,
   orderReceipt,
-  coupons,
   pearson,
   ...reducers,
 });
