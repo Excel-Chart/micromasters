@@ -68,7 +68,7 @@ import {
   updateCalculatorEdit,
 } from '../actions/financial_aid';
 import { setTimeoutActive } from '../actions/order_receipt';
-import { attachCoupon, setRecentlyAttachedCoupon } from '../actions/coupons';
+import { setRecentlyAttachedCoupon } from '../actions/coupons';
 import { COURSE_EMAIL_TYPE } from '../components/email/constants';
 import { COURSE_TEAM_EMAIL_CONFIG } from '../components/email/lib';
 import { withEmailDialog } from '../components/email/hoc';
@@ -111,7 +111,7 @@ class DashboardPage extends React.Component {
   };
 
   props: {
-    coupons:                  RestState,
+    coupons:                  RestState<Array<Coupon>>,
     profile:                  ProfileGetResult,
     currentProgramEnrollment: AvailableProgram,
     programs:                 AvailableProgramsState,
@@ -334,10 +334,10 @@ class DashboardPage extends React.Component {
       Abort to avoid the following race condition:
 
         1. launch first fetchCoupons() API request
-        2. launch attachCoupon() API request
-        3. attachCoupon() returns, launch second fetchCoupons() API request
-        4. second fetchCoupons() returns, updates Redux store with accurate information
-        5. first fetchCoupons() finally returns, updates Redux store with stale information
+        2. launch POST API request
+        3. POST returns, launch second GET API request
+        4. second GET returns, updates Redux store with accurate information
+        5. first GET finally returns, updates Redux store with stale information
 
       Ideally, it would be nice to abort the first fetchCoupons() API request
       in this case, but fetches can't be aborted. Instead, we will abort
@@ -347,7 +347,7 @@ class DashboardPage extends React.Component {
       return;
     }
 
-    dispatch(attachCoupon(query.coupon)).then(result => {
+    dispatch(actions.coupns.post(query.coupon)).then(result => {
       this.setRecentlyAttachedCoupon(result.coupon);
       this.setCouponNotificationVisibility(true);
       this.context.router.push('/dashboard/');
