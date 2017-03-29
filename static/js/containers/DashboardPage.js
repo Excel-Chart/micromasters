@@ -133,6 +133,7 @@ class DashboardPage extends React.Component {
   }
 
   componentDidUpdate() {
+    console.log(actions);
     this.updateRequirements();
 
     let program = this.getCurrentlyEnrolledProgram();
