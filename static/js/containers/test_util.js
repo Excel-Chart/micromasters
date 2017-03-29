@@ -9,10 +9,6 @@ import {
   RECEIVE_COURSE_PRICES_SUCCESS,
 } from '../actions/course_prices';
 import {
-  REQUEST_FETCH_COUPONS,
-  RECEIVE_FETCH_COUPONS_SUCCESS,
-} from '../actions/coupons';
-import {
   REQUEST_GET_PROGRAM_ENROLLMENTS,
   RECEIVE_GET_PROGRAM_ENROLLMENTS_SUCCESS,
 } from '../actions/programs';
