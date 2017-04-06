@@ -347,7 +347,7 @@ class DashboardPage extends React.Component {
       return;
     }
 
-    dispatch(actions.coupns.post(query.coupon)).then(result => {
+    dispatch(actions.coupons.post(query.coupon)).then(result => {
       this.setRecentlyAttachedCoupon(result.coupon);
       this.setCouponNotificationVisibility(true);
       this.context.router.push('/dashboard/');

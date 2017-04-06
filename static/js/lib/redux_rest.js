@@ -23,7 +23,6 @@ export const successActionType = (...xs: string[]) => `RECEIVE_${actionize(xs)}_
 
 export const failureActionType = (...xs: string[]) => `RECEIVE_${actionize(xs)}_FAILURE`;
 
-
 export const clearActionType = (...xs: string[]) => `CLEAR_${actionize(xs)}`;
 
 export const INITIAL_STATE: RestState<*> = {
