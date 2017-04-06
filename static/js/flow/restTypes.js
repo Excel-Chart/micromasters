@@ -1,7 +1,7 @@
 // @flow
 
 export type RestState<T> = {
-  data?: T,
+  data: T,
   error?: any,
   processing: boolean,
   loaded: boolean,

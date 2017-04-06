@@ -18,15 +18,13 @@ import {
   clearDashboard,
   fetchDashboard,
 } from '../actions/dashboard';
-import {
-  clearCoupons,
-  fetchCoupons,
-} from '../actions/coupons';
-import type { CouponsState } from '../reducers/coupons';
 import type { CheckoutState } from '../reducers';
+import type { Coupon } from '../flow/couponTypes';
+import type { RestState } from '../flow/restTypes';
 import { createForm, findCourseRun } from '../util/util';
 import { calculatePrice } from '../lib/coupon';
 import { getOwnDashboard, getOwnCoursePrices } from '../reducers/util';
+import { actions } from '../lib/redux_rest';
 
 class OrderSummaryPage extends React.Component {
   static contextTypes = {
@@ -40,7 +38,7 @@ class OrderSummaryPage extends React.Component {
     dashboard:                DashboardState,
     dispatch:                 Dispatch,
     prices:                   CoursePricesState,
-    coupons:                  CouponsState,
+    coupons:                  RestState<Array<Coupon>>,
     location:                 Object,
   };
 
@@ -56,7 +54,7 @@ class OrderSummaryPage extends React.Component {
     const { dispatch } = this.props;
     dispatch(clearDashboard());
     dispatch(clearCoursePrices());
-    dispatch(clearCoupons());
+    dispatch(actions.coupons.clear());
   }
 
   fetchDashboard() {
@@ -74,8 +72,8 @@ class OrderSummaryPage extends React.Component {
 
   fetchCoupons() {
     const { coupons, dispatch } = this.props;
-    if (coupons.fetchGetStatus === undefined) {
-      dispatch(fetchCoupons());
+    if (coupons.getStatus === undefined) {
+      dispatch(actions.coupons.get());
     }
   }
 
@@ -116,7 +114,7 @@ class OrderSummaryPage extends React.Component {
     coursePrice = prices.coursePrices.find(coursePrice => coursePrice.program_id === currentProgramEnrollment.id);
 
     if (course && courseRun && coursePrice) {
-      const [coupon, calculatedPrice] = calculatePrice(courseRun.id, course.id, coursePrice, coupons.coupons);
+      const [coupon, calculatedPrice] = calculatePrice(courseRun.id, course.id, coursePrice, coupons.data);
       let discount = null;
       if (calculatedPrice !== null && calculatedPrice !== undefined) {
         discount = coursePrice.price - calculatedPrice;
