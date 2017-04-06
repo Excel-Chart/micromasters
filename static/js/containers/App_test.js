@@ -1,6 +1,5 @@
 // @flow
 /* global document: false, window: false, SETTINGS: false */
-
 import ReactDOM from 'react-dom';
 import { assert } from 'chai';
 import _ from 'lodash';
@@ -16,11 +15,6 @@ import {
   RECEIVE_COURSE_PRICES_SUCCESS,
   CLEAR_COURSE_PRICES,
 } from '../actions/course_prices';
-import {
-  REQUEST_FETCH_COUPONS,
-  RECEIVE_FETCH_COUPONS_SUCCESS,
-  CLEAR_COUPONS,
-} from '../actions/coupons';
 import {
   REQUEST_GET_USER_PROFILE,
   RECEIVE_GET_USER_PROFILE_SUCCESS,
@@ -53,6 +47,7 @@ import {
 import IntegrationTestHelper from '../util/integration_test_helper';
 import { GoogleMapsStub } from '../util/test_utils';
 import { SUCCESS_ACTIONS } from './test_util';
+import { actions } from '../lib/redux_rest';
 
 const REDIRECT_ACTIONS = SUCCESS_ACTIONS.concat([
   START_PROFILE_EDIT,
@@ -142,12 +137,14 @@ describe('App', function() {
   });
 
   describe('program enrollments', () => {
-    it('shows an error message if the enrollments GET fetch fails', () => {
+    it.only('shows an error message if the enrollments GET fetch fails', () => {
       helper.programsGetStub.returns(Promise.reject("error"));
       let types = [
         REQUEST_DASHBOARD,
         REQUEST_COURSE_PRICES,
-        REQUEST_FETCH_COUPONS,
+        RECEIVE_COURSE_PRICES_SUCCESS,
+        actions.coupons.get.requestType,
+        actions.coupons.get.successType,
         REQUEST_GET_USER_PROFILE,
         REQUEST_GET_PROGRAM_ENROLLMENTS,
         RECEIVE_GET_PROGRAM_ENROLLMENTS_FAILURE,
@@ -159,6 +156,9 @@ describe('App', function() {
         RECEIVE_FETCH_COUPONS_SUCCESS,
         RECEIVE_GET_USER_PROFILE_SUCCESS,
       ];
+      console.log(actions.coupons.get.requestType);
+      console.log(actions.coupons.get.successType);
+
       return renderComponent('/dashboard', types).then(([wrapper]) => {
         let text = wrapper.find('.page-content').text();
         assert(text.includes("Sorry, we were unable to load the data"));

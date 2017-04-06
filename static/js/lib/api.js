@@ -274,7 +274,9 @@ export function addCourseEnrollment(courseId: string) {
 }
 
 export function getCoupons(): Promise<Coupons> {
+  console.log('IN HERE YO');
   return fetchJSONWithCSRF('/api/v0/coupons/').then(coupons => {
+    console.log('I IN HERE');
     // turn `amount` from string into decimal
     return R.map(R.evolve({amount: Decimal}), coupons);
   });
