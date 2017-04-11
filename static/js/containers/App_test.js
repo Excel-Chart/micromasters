@@ -137,26 +137,23 @@ describe('App', function() {
   });
 
   describe('program enrollments', () => {
-    it.only('shows an error message if the enrollments GET fetch fails', () => {
+    it('shows an error message if the enrollments GET fetch fails', () => {
       helper.programsGetStub.returns(Promise.reject("error"));
       let types = [
-        actions.coupons.get.requestType,
-        actions.coupons.get.successType,
         REQUEST_DASHBOARD,
         REQUEST_COURSE_PRICES,
-        RECEIVE_COURSE_PRICES_SUCCESS,
-        actions.coupons.clearType,
+        actions.coupons.get.requestType,
         REQUEST_GET_USER_PROFILE,
         REQUEST_GET_PROGRAM_ENROLLMENTS,
         RECEIVE_GET_PROGRAM_ENROLLMENTS_FAILURE,
         CLEAR_DASHBOARD,
         CLEAR_COURSE_PRICES,
+        actions.coupons.clearType,
         RECEIVE_DASHBOARD_SUCCESS,
         RECEIVE_COURSE_PRICES_SUCCESS,
         RECEIVE_GET_USER_PROFILE_SUCCESS,
+        actions.coupons.get.successType,
       ];
-      console.log(actions.coupons.get.requestType);
-      console.log(actions.coupons.get.successType);
 
       return renderComponent('/dashboard', types).then(([wrapper]) => {
         let text = wrapper.find('.page-content').text();

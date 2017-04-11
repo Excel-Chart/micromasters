@@ -87,9 +87,7 @@ export const deriveAction = (endpoint: Endpoint, verb: string): DerivedAction =>
     action: (...params) => {
       return (dispatch: Dispatch): Promise<*> => {
         dispatch(requestAction());
-        console.log('we gonna do it');
         return fetchFunc(...params).then(data => {
-          console.log('we did it');
           dispatch(successAction(data));
           return Promise.resolve(data);
         }, error => {
