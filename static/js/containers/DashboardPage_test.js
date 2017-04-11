@@ -22,7 +22,6 @@ import {
 import { CLEAR_COURSE_PRICES } from '../actions/course_prices';
 import { FETCH_SUCCESS } from '../actions';
 import * as dashboardActions from '../actions/dashboard';
-import { CLEAR_COUPONS } from '../actions/coupons';
 import {
   SHOW_DIALOG,
   HIDE_DIALOG,
@@ -58,18 +57,14 @@ import {
 } from '../actions/financial_aid';
 import * as libCoupon  from '../lib/coupon';
 import {
-  REQUEST_ATTACH_COUPON,
-  RECEIVE_ATTACH_COUPON_SUCCESS,
-  RECEIVE_ATTACH_COUPON_FAILURE,
   SET_RECENTLY_ATTACHED_COUPON,
-  REQUEST_FETCH_COUPONS,
-  RECEIVE_FETCH_COUPONS_SUCCESS,
 } from '../actions/coupons';
 import { findCourseRun } from '../util/util';
 import {
   COUPON,
   DASHBOARD_RESPONSE,
   ERROR_RESPONSE,
+  ATTACH_COUPON_RESPONSE,
 } from '../test_constants';
 import {
   FA_ALL_STATUSES,
@@ -92,6 +87,7 @@ import {
   DASHBOARD_SUCCESS_ACTIONS,
   DASHBOARD_ERROR_ACTIONS,
 } from './test_util';
+import { actions } from '../lib/redux_rest';
 
 describe('DashboardPage', () => {
   let renderComponent, helper, listenForActions;
@@ -379,30 +375,33 @@ describe('DashboardPage', () => {
         CLEAR_ENROLLMENTS,
         CLEAR_DASHBOARD,
         CLEAR_COURSE_PRICES,
-        CLEAR_COUPONS,
+        actions.coupons.clearType,
       ], () => {
         ReactDOM.unmountComponentAtNode(div);
       });
     });
   });
 
-  describe('handles redeeming coupons', () => {
+  describe.only('handles redeeming coupons', () => {
     const COUPON_SUCCESS_ACTIONS = DASHBOARD_SUCCESS_ACTIONS.concat([
-      REQUEST_ATTACH_COUPON,
-      RECEIVE_ATTACH_COUPON_SUCCESS,
+      actions.coupons.post.requestType,
+      actions.coupons.post.successType,
       SET_RECENTLY_ATTACHED_COUPON,
       SET_COUPON_NOTIFICATION_VISIBILITY,
-      REQUEST_FETCH_COUPONS,
-      RECEIVE_FETCH_COUPONS_SUCCESS,
+      actions.coupons.get.requestType,
+      actions.coupons.get.successType,
     ]);
     const COUPON_FAILURE_ACTIONS = DASHBOARD_SUCCESS_ACTIONS.concat([
-      REQUEST_ATTACH_COUPON,
-      RECEIVE_ATTACH_COUPON_FAILURE,
+      actions.coupons.post.requestType,
+      actions.coupons.post.failureType,
       SET_TOAST_MESSAGE,
     ]);
 
     it('with a successful fetch', () => {
       helper.couponsStub.returns(Promise.resolve([COUPON]));
+      helper.fetchJSONWithCSRFStub.withArgs(
+        "/api/v0/coupons/success-coupon/users/"
+      ).returns(Promise.resolve(ATTACH_COUPON_RESPONSE));
 
       return renderComponent(
         '/dashboard?coupon=success-coupon',
@@ -411,19 +410,22 @@ describe('DashboardPage', () => {
         const state = helper.store.getState();
         assert.deepEqual(state.coupons.recentlyAttachedCoupon, COUPON);
         assert.isTrue(state.ui.couponNotificationVisibility);
-        assert.deepEqual(state.coupons.coupons, [COUPON]);
+        assert.deepEqual(state.coupons.data, [COUPON]);
       });
     });
 
     it('with a failed fetch', () => {
       helper.attachCouponStub.returns(Promise.reject());
+      helper.fetchJSONWithCSRFStub.withArgs(
+        "/api/v0/coupons/failure-coupon/users/"
+      ).returns(Promise.reject());
 
       return renderComponent(
         '/dashboard?coupon=failure-coupon',
         COUPON_FAILURE_ACTIONS
       ).then(() => {
         const state = helper.store.getState();
-        assert.isNull(state.coupons.recentlyAttachedCoupon);
+        assert.isUndefined(state.coupons.recentlyAttachedCoupon);
         assert.isFalse(state.ui.couponNotificationVisibility);
         assert.deepEqual(state.ui.toastMessage, {
           title: "Coupon failed",
@@ -447,6 +449,9 @@ describe('DashboardPage', () => {
       // Make sure we wait for the first call to complete before resolving the second promise
       helper.couponsStub.onCall(0).returns(slowPromise);
       helper.couponsStub.onCall(1).returns(Promise.resolve([coupon2]));
+      helper.fetchJSONWithCSRFStub.withArgs(
+        "/api/v0/coupons/success-coupon/users/"
+      ).returns(Promise.resolve(ATTACH_COUPON_RESPONSE));
 
       return renderComponent(
         '/dashboard?coupon=success-coupon',
@@ -455,7 +460,7 @@ describe('DashboardPage', () => {
         const state = helper.store.getState();
         assert.deepEqual(state.coupons.recentlyAttachedCoupon, COUPON);
         // must be the second call result
-        assert.deepEqual(state.coupons.coupons, [coupon2]);
+        assert.deepEqual(state.coupons.data, [coupon2]);
         assert.isTrue(state.ui.couponNotificationVisibility);
         sinon.assert.calledTwice(helper.couponsStub);
       });

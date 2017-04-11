@@ -9,11 +9,11 @@ import type { Endpoint } from '../flow/restTypes';
 export const couponEndpoint: Endpoint = {
   name: 'coupons',
   url: "",
-  makeOptions: () => ({}),
   getPrefix: 'FETCH',
   postPrefix: 'ATTACH',
   getFunc: getCoupons,
   postFunc: attachCoupon,
+  postSuccessHandler: (payload, oldData) => oldData,
   verbs: [GET, POST],
   extraActions: {
     [SET_RECENTLY_ATTACHED_COUPON]: (state: Object, action: Action<any, any>) => ({

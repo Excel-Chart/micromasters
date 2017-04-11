@@ -42,7 +42,7 @@ export default class IntegrationTestHelper {
     this.sandbox = sinon.sandbox.create();
     this.store = configureMainTestStore((...args) => {
       // uncomment to listen on dispatched actions
-      // console.log(args);
+      console.log(args[1].type);
       const reducer = compose(
         mergePersistedState()
       )(rootReducer);
@@ -64,12 +64,13 @@ export default class IntegrationTestHelper {
     this.coursePricesStub.returns(Promise.resolve(COURSE_PRICES_RESPONSE));
     this.couponsStub = this.fetchJSONWithCSRFStub.withArgs('/api/v0/coupons/');
     this.couponsStub.returns(Promise.resolve([]));
+
+    this.attachCouponStub = this.sandbox.stub(api, 'attachCoupon');
+    this.attachCouponStub.returns(Promise.resolve(ATTACH_COUPON_RESPONSE));
     this.profileGetStub = this.sandbox.stub(api, 'getUserProfile');
     this.profileGetStub.withArgs(SETTINGS.user.username).returns(Promise.resolve(USER_PROFILE_RESPONSE));
     this.programsGetStub = this.sandbox.stub(api, 'getPrograms');
     this.programsGetStub.returns(Promise.resolve(PROGRAMS));
-    this.attachCouponStub = this.sandbox.stub(api, 'attachCoupon');
-    this.attachCouponStub.returns(Promise.resolve(ATTACH_COUPON_RESPONSE));
     this.skipFinancialAidStub = this.sandbox.stub(api, 'skipFinancialAid');
     this.skipFinancialAidStub.returns(Promise.resolve());
     this.addFinancialAidStub = this.sandbox.stub(api, 'addFinancialAid');
