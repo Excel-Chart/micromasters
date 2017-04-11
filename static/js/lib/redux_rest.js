@@ -14,6 +14,7 @@ import {
 } from '../actions';
 import { GET, PATCH, POST } from '../constants';
 import { automaticEmailsEndpoint } from '../reducers/automatic_emails';
+import { couponEndpoint } from '../reducers/coupons';
 
 const actionize = R.compose(R.toUpper, R.join("_"), R.map(_.snakeCase));
 
@@ -86,7 +87,9 @@ export const deriveAction = (endpoint: Endpoint, verb: string): DerivedAction =>
     action: (...params) => {
       return (dispatch: Dispatch): Promise<*> => {
         dispatch(requestAction());
+        console.log('we gonna do it');
         return fetchFunc(...params).then(data => {
+          console.log('we did it');
           dispatch(successAction(data));
           return Promise.resolve(data);
         }, error => {
@@ -178,6 +181,7 @@ export const deriveReducers = (endpoint: Endpoint, actions: Function) => {
 
 export const endpoints: Array<Endpoint> = [
   automaticEmailsEndpoint,
+  couponEndpoint,
 ];
 
 const reducers: Object = {};

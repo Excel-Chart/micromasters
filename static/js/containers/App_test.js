@@ -140,20 +140,19 @@ describe('App', function() {
     it.only('shows an error message if the enrollments GET fetch fails', () => {
       helper.programsGetStub.returns(Promise.reject("error"));
       let types = [
+        actions.coupons.get.requestType,
+        actions.coupons.get.successType,
         REQUEST_DASHBOARD,
         REQUEST_COURSE_PRICES,
         RECEIVE_COURSE_PRICES_SUCCESS,
-        actions.coupons.get.requestType,
-        actions.coupons.get.successType,
+        actions.coupons.clearType,
         REQUEST_GET_USER_PROFILE,
         REQUEST_GET_PROGRAM_ENROLLMENTS,
         RECEIVE_GET_PROGRAM_ENROLLMENTS_FAILURE,
         CLEAR_DASHBOARD,
         CLEAR_COURSE_PRICES,
-        CLEAR_COUPONS,
         RECEIVE_DASHBOARD_SUCCESS,
         RECEIVE_COURSE_PRICES_SUCCESS,
-        RECEIVE_FETCH_COUPONS_SUCCESS,
         RECEIVE_GET_USER_PROFILE_SUCCESS,
       ];
       console.log(actions.coupons.get.requestType);

@@ -29,6 +29,7 @@ import { configureMainTestStore } from '../store/configureStore';
 import type { Action } from '../flow/reduxTypes';
 import type { TestStore } from '../flow/reduxTypes';
 import type { Sandbox } from '../flow/sinonTypes';
+import { couponEndpoint } from '../reducers/coupons';
 
 export default class IntegrationTestHelper {
   listenForActions: (a: Array<string>, f: Function) => Promise<*>;
@@ -48,6 +49,12 @@ export default class IntegrationTestHelper {
       return reducer(...args);
     });
 
+    // we need this to deal with the 'endpoint' objects, it's now necessary
+    // to directly mock out the fetch call because at module load time the
+    // endpoint object already holds a reference to the unmocked API function
+    // (e.g. getCoupons) which Sinon doesn't seem to be able to deal with.
+    this.fetchJSONWithCSRFStub = this.sandbox.stub(api, 'fetchJSONWithCSRF');
+
     this.listenForActions = this.store.createListenForActions();
     this.dispatchThen = this.store.createDispatchThen();
 
@@ -55,8 +62,9 @@ export default class IntegrationTestHelper {
     this.dashboardStub.returns(Promise.resolve(DASHBOARD_RESPONSE));
     this.coursePricesStub = this.sandbox.stub(api, 'getCoursePrices');
     this.coursePricesStub.returns(Promise.resolve(COURSE_PRICES_RESPONSE));
-    this.couponsStub = this.sandbox.stub(api, 'getCoupons');
-    this.couponsStub.returns(Promise.resolve([]));
+    // this.couponsStub = this.fetchJSONWithCSRFStub.withArgs('/api/v0/coupons');
+    // this.couponsStub.returns(Promise.resolve([]));
+    this.fetchJSONWithCSRFStub.withArgs('/api/v0/coupons').returns(Promise.resolve([]));
     this.profileGetStub = this.sandbox.stub(api, 'getUserProfile');
     this.profileGetStub.withArgs(SETTINGS.user.username).returns(Promise.resolve(USER_PROFILE_RESPONSE));
     this.programsGetStub = this.sandbox.stub(api, 'getPrograms');
