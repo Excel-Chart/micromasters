@@ -23,7 +23,7 @@ describe('AutomaticEmailPage', () => {
   beforeEach(() => {
     helper = new IntegrationTestHelper();
     renderComponent = helper.renderComponent.bind(helper);
-    fetchStub = helper.sandbox.stub(api, 'fetchJSONWithCSRF');
+    fetchStub = helper.fetchJSONWithCSRFStub.withArgs("/api/v0/mail/automatic_email/");
     fetchStub.returns(Promise.resolve(GET_AUTOMATIC_EMAILS_RESPONSE));
 
     SETTINGS.roles = [{
