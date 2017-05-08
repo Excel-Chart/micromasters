@@ -398,18 +398,24 @@ def is_coupon_redeemable(coupon, user):
 
 def pick_coupons(user):
     """
-    Choose the coupons which would be used in redemptions by the user. There should be at most one coupon
-    per program in the output.
+    Choose the coupons which would be used in redemptions by the user.
 
     The heuristic is currently:
-     - choose attached coupons over automatic coupons
-     - choose the coupon which has been most recently attached, or most recently modified
+     - There can only be one program-level coupon, or some number of course-level coupons. There
+       is no mix of course and program coupons.
+     - Program-level coupons get priority over course-level coupons.
+     - Coupons which are attached (the user clicks on a link) have priority over automatic
+       coupons.
+     - The most recently attached coupon (link most recently clicked) gets priority. If the
+       coupon is an automatic coupon, the most recently modified one gets priority.
 
     Args:
         user (django.contrib.auth.models.User): A user
 
     Returns:
-        list of Coupon: The coupons which will be used by the user when redeeming runs in a program
+        dict:
+            The coupons which will be used by the user when redeeming runs in a program. The
+            keys are program ids and the value is a list of coupons for that program.
     """
     sorted_attached_coupons = Coupon.user_coupon_qset(user).order_by('-usercoupon__updated_on')
     sorted_automatic_coupons = Coupon.is_automatic_qset().order_by('-updated_on')
@@ -418,14 +424,26 @@ def pick_coupons(user):
     # or automatic coupons, which there should only be a few. So the next iterations should not
     # affect many rows in the DB.
 
-    coupons = []
-    # Only one coupon per program
-    program_ids = set()
+    program_type = ContentType.get_for_model(Program)
+    coupons = {}
+    has_program = set()
     for coupon in chain(sorted_attached_coupons, sorted_automatic_coupons):
+        if not is_coupon_redeemable(coupon, user):
+            continue
+
         program_id = coupon.program.id
-        if program_id not in program_ids and is_coupon_redeemable(coupon, user):
-            coupons.append(coupon)
-            program_ids.add(program_id)
+        if program_id not in coupons:
+            coupons[program_id] = []
+
+        if coupon.content_type == program_type:
+            if program_id not in has_program:
+                has_program.add(program_id)
+                coupons[program_id] = [coupon]
+            # else keep the newer program-level coupon
+        else:  # content_type is Course
+            if program_id not in has_program:
+                coupons[program_id].append(coupon)
+            # else the existing program-level coupon has priority
 
     return coupons
 
